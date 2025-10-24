@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisição Backend YAY</title>
+    <style>
+        /* Estilos Base e Layout */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            color: #333;
+            text-align: center;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 30px;
+        }
+
+        /* Estilos do Botão */
+        button {
+            padding: 12px 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            background-color: #3b82f6; /* Cor primária */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.1s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            background-color: #93c5fd; /* Cor mais clara quando desabilitado */
+            cursor: not-allowed;
+        }
+
+        /* Estilos do Resultado */
+        #result {
+            margin-top: 30px;
+            min-height: 40px; /* Garante espaço reservado */
+            font-size: 1.8em;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px; /* Espaço entre ícone e texto */
+        }
+
+        .success {
+            color: #10b981; /* Verde esmeralda */
+        }
+
+        .error {
+            color: #ef4444; /* Vermelho forte */
+            font-size: 1em; /* Menor para erros longos */
+            padding: 10px;
+            border: 1px solid #fca5a5;
+            background-color: #fef2f2;
+            border-radius: 6px;
+        }
+
+        /* Indicador de Carregamento (Spinner CSS) */
+        .loading {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Teste de Conexão com Backend</h1>
+
+        <button id="requestButton">🚀 Enviar Requisição</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // *** CERTIFIQUE-SE DE QUE ESTA URL ESTÁ CORRETA ***
+        // Deve ser o endereço onde o seu backend Node.js está rodando (porta 3000)
+        const backendUrl = 'http://localhost:3000/api/mensagem'; 
+
+        const resultDiv = document.getElementById('result');
+        const requestButton = document.getElementById('requestButton');
+
+        function showLoading() {
+            resultDiv.innerHTML = '<div class="loading"></div>';
+            resultDiv.classList.remove('success', 'error');
+            requestButton.disabled = true;
+        }
+
+        function showSuccess(message) {
+            resultDiv.innerHTML = `✅ ${message}`;
+            resultDiv.className = 'success';
+            requestButton.disabled = false;
+        }
+
+        function showError(errorMessage) {
+            resultDiv.innerHTML = `❌ ${errorMessage}`;
+            resultDiv.className = 'error';
+            requestButton.disabled = false;
+        }
+
+        async function sendRequest() {
+            showLoading(); // Exibe o spinner de carregamento
+
+            try {
+                // Requisição ao seu backend
+                const response = await fetch(backendUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro do Servidor. Status: ${response.status}`);
+                }
+
+                // Lê o corpo da resposta JSON
+                const data = await response.json();
+                
+                // Exibe a mensagem "YAY" recebida do backend
+                showSuccess(data.message);
+
+            } catch (error) {
+                // Captura e exibe erros de rede (backend desligado) ou erros de servidor
+                const userMessage = error.message.includes('Failed to fetch') 
+                    ? `Backend offline ou URL incorreta (${backendUrl}).`
+                    : error.message;
+
+                showError(`Falha na Requisição: ${userMessage}`);
+                console.error("Erro completo:", error);
+            }
+        }
+
+        // Adiciona o 'EventListener' ao botão
+        requestButton.addEventListener('click', sendRequest);
+    </script>
+
+</body>
+</html>
